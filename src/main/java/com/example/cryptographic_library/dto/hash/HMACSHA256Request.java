@@ -1,5 +1,15 @@
 package com.example.cryptographic_library.dto.hash;
 
+/**
+ * HMAC-SHA256请求参数传输对象
+ *
+ * <p>包含三个必需参数：
+ * <ul>
+ *   <li>key: 签名密钥（建议长度≥32字节）</li>
+ *   <li>data: 待签名原始数据</li>
+ *   <li>encoding: 签名结果编码方式</li>
+ * </ul>
+ */
 public class HMACSHA256Request {
     private String key;
     private String data;

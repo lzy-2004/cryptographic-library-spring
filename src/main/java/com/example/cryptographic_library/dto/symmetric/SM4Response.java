@@ -1,5 +1,15 @@
 package com.example.cryptographic_library.dto.symmetric;
 
+/**
+ * SM4响应参数传输对象
+ *
+ * <p>状态码说明：
+ * <ul>
+ *   <li>0: 操作成功</li>
+ *   <li>-1: 输入参数错误</li>
+ *   <li>-2: 加解密过程错误</li>
+ * </ul>
+ */
 public class SM4Response {
     private int status;
     private String message;

@@ -6,9 +6,29 @@ import com.example.cryptographic_library.algorithm.hash.PBKDF2;
 import com.example.cryptographic_library.dto.hash.PBKDF2Response;
 import org.springframework.stereotype.Service;
 
+/**
+ * PBKDF2密钥派生服务实现
+ *
+ * <p>安全特性：
+ * <ul>
+ *   <li>强制密码非空校验</li>
+ *   <li>盐值长度建议≥16字节</li>
+ *   <li>迭代次数推荐≥10000次</li>
+ * </ul>
+ */
 @Service
 public class PBKDF2Service {
 
+    /**
+     * 执行密钥派生
+     * @param password 用户密码（UTF-8编码）
+     * @param salt 盐值字符串（UTF-8编码）
+     * @param iterations 迭代次数（推荐≥10000）
+     * @param keyLength 派生密钥长度（16-1024字节）
+     * @param outputEncoding 输出格式（hex/base64）
+     * @return 密钥派生结果
+     * @throws IllegalArgumentException 参数不合法时抛出
+     */
     public PBKDF2Response deriveKey(String password,
                                     String salt,
                                     int iterations,

@@ -1,5 +1,15 @@
 package com.example.cryptographic_library.dto.encode;
 
+/**
+ * UTF-8响应参数传输对象
+ *
+ * <p>标准化接口响应格式，包含：
+ * <ul>
+ *   <li>status: 操作状态码（0=成功，-1=通用错误，-2=格式错误）</li>
+ *   <li>message: 操作结果描述</li>
+ *   <li>result: 处理结果数据（失败时为null）</li>
+ * </ul>
+ */
 public class UTF_8Response {
     private int status;
     private String message;

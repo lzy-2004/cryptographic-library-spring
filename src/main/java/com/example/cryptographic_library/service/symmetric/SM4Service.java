@@ -7,9 +7,28 @@ import com.example.cryptographic_library.algorithm.symmetric.SM4;
 import com.example.cryptographic_library.dto.symmetric.SM4Response;
 import org.springframework.stereotype.Service;
 
+/**
+ * SM4国密算法服务实现
+ *
+ * <p>功能特性：
+ * <ul>
+ *   <li>严格遵循国家密码管理局标准</li>
+ *   <li>32轮非线性迭代结构</li>
+ *   <li>自动PKCS7填充处理</li>
+ *   <li>支持Hex/Base64编码输出</li>
+ * </ul>
+ */
 @Service
 public class SM4Service {
 
+    /**
+     * 执行加密操作
+     * @param key 加密密钥（必须16字节ASCII字符串）
+     * @param plaintext 明文数据（UTF-8编码）
+     * @param encoding 输出编码格式（hex/base64）
+     * @return 加密结果响应
+     * @throws IllegalArgumentException 密钥格式错误时抛出
+     */
     public SM4Response encrypt(String key, String plaintext, String encoding) {
         try {
             validateKey(key);
@@ -22,6 +41,14 @@ public class SM4Service {
         }
     }
 
+    /**
+     * 执行解密操作
+     * @param key 解密密钥（需与加密密钥一致）
+     * @param ciphertext 密文字符串（需与加密输出格式匹配）
+     * @param encoding 输入编码格式（hex/base64）
+     * @return 解密结果响应
+     * @throws IllegalArgumentException 输入数据格式错误时抛出
+     */
     public SM4Response decrypt(String key, String ciphertext, String encoding) {
         try {
             validateKey(key);

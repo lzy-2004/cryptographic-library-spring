@@ -1,5 +1,15 @@
 package com.example.cryptographic_library.dto.hash;
 
+/**
+ * SHA-256响应参数传输对象
+ *
+ * <p>状态码说明：
+ * <ul>
+ *   <li>0: 成功（32字节哈希值）</li>
+ *   <li>-1: 参数错误</li>
+ *   <li>-2: 服务端内部错误</li>
+ * </ul>
+ */
 public class SHA256Response {
     private int status;
     private String message;

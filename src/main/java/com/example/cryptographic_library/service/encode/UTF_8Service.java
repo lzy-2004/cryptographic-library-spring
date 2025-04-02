@@ -4,8 +4,26 @@ import com.example.cryptographic_library.algorithm.encode.UTF_8;
 import com.example.cryptographic_library.dto.encode.UTF_8Response;
 import org.springframework.stereotype.Service;
 
+/**
+ * UTF-8编解码服务实现
+ *
+ * <p>支持多种数据格式转换：
+ * <ul>
+ *   <li>hex: 十六进制字符串（如e4bda0）</li>
+ *   <li>binary: 二进制字符串（如11100100 10111101 10100000）</li>
+ *   <li>octal: 八进制字符串（如344 275 240）</li>
+ *   <li>decimal: 十进制字符串（如228 189 160）</li>
+ * </ul>
+ */
 @Service
 public class UTF_8Service {
+    /**
+     * 执行UTF-8编码转换
+     * @param data 原始字符串
+     * @param encoding 目标格式（hex/binary/octal/decimal）
+     * @return 编码操作结果响应
+     * @see UTF_8#encode(String)
+     */
     public UTF_8Response encode(String data, String encoding) {
         try {
             UTF_8 utf_8 = new UTF_8();
@@ -27,6 +45,14 @@ public class UTF_8Service {
         }
     }
 
+    /**
+     * 执行UTF-8解码转换
+     * @param data 已编码数据字符串
+     * @param encoding 源数据格式（hex/binary/octal/decimal）
+     * @return 解码操作结果响应
+     * @throws IllegalArgumentException 当格式转换失败时抛出
+     * @see UTF_8#decode(byte[])
+     */
     public UTF_8Response decode(String data,String encoding) {
         try {
             UTF_8 utf_8 = new UTF_8();

@@ -6,8 +6,25 @@ import com.example.cryptographic_library.algorithm.hash.HMacSHA1;
 import com.example.cryptographic_library.dto.hash.HMACSHA1Response;
 import org.springframework.stereotype.Service;
 
+/**
+ * HMAC-SHA1签名服务实现
+ *
+ * <p>支持以下编码格式输出：
+ * <ul>
+ *   <li>hex: 十六进制字符串（默认）</li>
+ *   <li>base64: Base64编码字符串</li>
+ * </ul>
+ */
 @Service
 public class HMACSHA1Service {
+    /**
+     * 生成HMAC-SHA1签名
+     * @param key 签名密钥（UTF-8 编码）
+     * @param data 待签名数据
+     * @param encoding 输出格式（hex/base64）
+     * @return 签名结果响应
+     * @see HMacSHA1#calculate(byte[])
+     */
     public HMACSHA1Response hash(String key, String data, String encoding) {
         try {
             HMacSHA1 hmacsha1 = new HMacSHA1(UTF_8.encode(key));

@@ -1,5 +1,14 @@
 package com.example.cryptographic_library.dto.hash;
 
+/**
+ * SHA-1响应参数传输对象
+ *
+ * <p>状态码说明：
+ * <ul>
+ *   <li>0: 成功（20字节哈希值）</li>
+ *   <li>-1: 处理失败</li>
+ * </ul>
+ */
 public class SHA1Response {
     private int status;
     private String message;

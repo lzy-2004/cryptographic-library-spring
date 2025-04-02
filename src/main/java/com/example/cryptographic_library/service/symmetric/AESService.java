@@ -6,8 +6,27 @@ import com.example.cryptographic_library.algorithm.symmetric.AES;
 import com.example.cryptographic_library.dto.symmetric.AESResponse;
 import org.springframework.stereotype.Service;
 
+/**
+ * AES对称加密服务实现
+ *
+ * <p>功能特性：
+ * <ul>
+ *   <li>支持128/192/256位密钥长度</li>
+ *   <li>PKCS7填充方案</li>
+ *   <li>支持Hex/Base64编码输出</li>
+ *   <li>自动密钥校验与转换</li>
+ * </ul>
+ */
 @Service
 public class AESService {
+    /**
+     * 执行加密操作
+     * @param key 加密密钥（UTF-8字符串，长度16/24/32字节）
+     * @param plaintext 明文数据（UTF-8编码）
+     * @param encoding 输出编码格式（hex/base64）
+     * @return 加密结果响应
+     * @throws IllegalArgumentException 密钥长度不符合要求时抛出
+     */
     public AESResponse encrypt(String key, String plaintext, String encoding) {
         try {
             AES aes = new AES(UTF_8.encode(key)); // 修改点1
@@ -19,6 +38,14 @@ public class AESService {
         }
     }
 
+    /**
+     * 执行解密操作
+     * @param key 解密密钥（需与加密密钥一致）
+     * @param ciphertext 密文字符串（需与加密输出格式匹配）
+     * @param encoding 输入编码格式（hex/base64）
+     * @return 解密结果响应
+     * @throws IllegalArgumentException 输入数据格式错误时抛出
+     */
     public AESResponse decrypt(String key, String ciphertext, String encoding) {
         try {
             AES aes = new AES(UTF_8.encode(key)); // 修改点3

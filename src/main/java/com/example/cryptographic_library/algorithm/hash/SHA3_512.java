@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class SHA3_512 {
     // 算法参数 (SHA3-512)
-    private static final int BITRATE = 576;     // 72字节块大小
+    private static final int BITRATE = 576;     // 72 字节块大小
     private static final int CAPACITY = 1024;   // 容量
     private static final int OUTPUT_LENGTH = 64; // 输出字节数（512位）
     private static final int ROUNDS = 24;       // Keccak轮数

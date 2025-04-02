@@ -5,9 +5,26 @@ import com.example.cryptographic_library.algorithm.hash.RIPEMD160;
 import com.example.cryptographic_library.dto.hash.RIPEMD160Response;
 import org.springframework.stereotype.Service;
 
+/**
+ * RIPEMD-160哈希服务实现
+ *
+ * <p>功能特性：
+ * <ul>
+ *   <li>支持任意长度输入数据</li>
+ *   <li>输出格式可选Hex或Base64</li>
+ *   <li>严格输入数据校验</li>
+ * </ul>
+ */
 @Service
 public class RIPEMD160Service {
 
+    /**
+     * 执行哈希计算
+     * @param data 原始输入字符串（UTF-8 编码）
+     * @param encoding 输出编码格式（hex/base64）
+     * @return 哈希结果响应（固定20 字节的哈希值）
+     * @throws IllegalArgumentException 输入为空或编码格式不支持时抛出
+     */
     public RIPEMD160Response hash(String data, String encoding) {
         try {
             validateInput(data, encoding);

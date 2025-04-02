@@ -1,5 +1,15 @@
 package com.example.cryptographic_library.dto.symmetric;
 
+/**
+ * RC6请求参数传输对象
+ *
+ * <p>包含：
+ * <ul>
+ *   <li>key: 加密/解密密钥（4-32字节）</li>
+ *   <li>data: 待处理数据（加密时为明文，解密时为密文）</li>
+ *   <li>outputEncoding: 编码格式标识</li>
+ * </ul>
+ */
 public class RC6Request {
     private String key;
     private String data;

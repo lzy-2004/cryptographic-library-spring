@@ -7,11 +7,27 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Base64;
 
+/**
+ * ECC160加密服务实现
+ *
+ * <p>功能特性：
+ * <ul>
+ *   <li>密钥对安全生成（基于SecureRandom）</li>
+ *   <li>临时密钥派生机制（ECDH）</li>
+ *   <li>组合式密文结构（临时公钥+数据）</li>
+ *   <li>兼容RFC 7748规范</li>
+ * </ul>
+ */
 @Service
 public class ECC160Service {
     private final Base64.Encoder encoder = Base64.getEncoder();
     private final Base64.Decoder decoder = Base64.getDecoder();
 
+    /**
+     * 生成ECC160密钥对
+     * @return 包含Base64编码公私钥的响应对象
+     * @throws SecurityException 密钥生成失败时抛出
+     */
     public ECC160DTO.KeyPairResponse generateKeyPair() {
         ECC_160.KeyPair keyPair = ECC_160.generateKeyPair();
         return new ECC160DTO.KeyPairResponse(
@@ -20,6 +36,12 @@ public class ECC160Service {
         );
     }
 
+    /**
+     * 执行加密操作
+     * @param request 加密请求参数
+     * @return 加密结果响应
+     * @throws IllegalArgumentException 公钥格式错误时抛出
+     */
     public ECC160DTO.CryptoResponse encrypt(ECC160DTO.EncryptRequest request) {
         byte[] publicKey = decoder.decode(request.getPublicKey());
         byte[] plaintext = decoder.decode(request.getPlaintext());
@@ -33,6 +55,11 @@ public class ECC160Service {
         return new ECC160DTO.CryptoResponse(encoder.encodeToString(combined));
     }
 
+    /**
+     * 执行解密操作
+     * @param request 解密请求参数
+     * @return 解密结果响应
+     */
     public ECC160DTO.CryptoResponse decrypt(ECC160DTO.DecryptRequest request) {
         byte[] privateKey = decoder.decode(request.getPrivateKey());
         byte[] ciphertext = decoder.decode(request.getCiphertext());

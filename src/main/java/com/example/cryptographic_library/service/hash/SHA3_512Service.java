@@ -5,9 +5,26 @@ import com.example.cryptographic_library.algorithm.hash.SHA3_512;
 import com.example.cryptographic_library.dto.hash.SHA3_512Response;
 import org.springframework.stereotype.Service;
 
+/**
+ * SHA3-512哈希服务实现
+ *
+ * <p>功能特性：
+ * <ul>
+ *   <li>海绵结构吸收-挤压模型</li>
+ *   <li>支持任意长度输入（理论最大2^64-1位）</li>
+ *   <li>输出格式可选Hex（128字符）或Base64（88字符）</li>
+ * </ul>
+ */
 @Service
 public class SHA3_512Service {
 
+    /**
+     * 执行哈希计算
+     * @param data 原始输入字符串（UTF-8 编码）
+     * @param encoding 输出编码格式（hex/base64）
+     * @return 哈希结果响应
+     * @throws IllegalArgumentException 输入为空或编码格式不支持时抛出
+     */
     public SHA3_512Response hash(String data, String encoding) {
         try {
             validateInput(data, encoding);
