@@ -69,7 +69,6 @@ public class RIPEMD160 {
         padLength = (padLength < 56) ?
                 56 - padLength :
                 120 - padLength;
-
         byte[] pad = new byte[padLength + 8];
         pad[0] = (byte) 0x80;
 
@@ -77,7 +76,6 @@ public class RIPEMD160 {
         for (int i = 0; i < 8; i++) {
             pad[pad.length - 8 + i] = (byte) (bitLength >>> (i * 8));
         }
-
         return pad;
     }
 
@@ -87,14 +85,11 @@ public class RIPEMD160 {
                 .order(ByteOrder.LITTLE_ENDIAN)
                 .asIntBuffer()
                 .get(X);
-
         int A1 = state[0], B1 = state[1], C1 = state[2], D1 = state[3], E1 = state[4];
         int A2 = state[0], B2 = state[1], C2 = state[2], D2 = state[3], E2 = state[4];
-
         for (int i = 0; i < 80; i++) {
             int phase = i / 16;
             int T1, T2;
-
             // 左通道处理
             switch (phase) {
                 case 0:
@@ -113,7 +108,6 @@ public class RIPEMD160 {
                     T1 = A1 + f5(B1, C1, D1) + X[r1[i]] + K1[phase];
             }
             T1 = Integer.rotateLeft(T1, s1[i]) + E1;
-
             // 更新左通道变量
             int temp1 = E1;
             E1 = D1;
@@ -121,7 +115,6 @@ public class RIPEMD160 {
             C1 = B1;
             B1 = T1;
             A1 = temp1;
-
             // 右通道处理
             switch (phase) {
                 case 0:
@@ -140,7 +133,6 @@ public class RIPEMD160 {
                     T2 = A2 + f1(B2, C2, D2) + X[r2[i]] + K2[phase];
             }
             T2 = Integer.rotateLeft(T2, s2[i]) + E2;
-
             // 更新右通道变量
             int temp2 = E2;
             E2 = D2;
@@ -149,7 +141,6 @@ public class RIPEMD160 {
             B2 = T2;
             A2 = temp2;
         }
-
         // 合并结果
         int[] temp = {
                 state[1] + C1 + D2,

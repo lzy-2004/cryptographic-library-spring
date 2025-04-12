@@ -64,8 +64,8 @@ public class ECC160Service {
         byte[] privateKey = decoder.decode(request.getPrivateKey());
         byte[] ciphertext = decoder.decode(request.getCiphertext());
         byte[] decrypted = ECC_160.decrypt(privateKey, new ECC_160.Ciphertext(
-                Arrays.copyOfRange(ciphertext, 0, 20), // 前20字节是临时公钥
-                Arrays.copyOfRange(ciphertext, 20, ciphertext.length) // 剩余是密文
+                Arrays.copyOfRange(ciphertext, 0, 20),
+                Arrays.copyOfRange(ciphertext, 20, ciphertext.length)
         ));
         return new ECC160DTO.CryptoResponse(encoder.encodeToString(decrypted));
     }

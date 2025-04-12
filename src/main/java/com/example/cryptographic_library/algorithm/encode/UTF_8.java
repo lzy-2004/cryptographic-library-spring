@@ -17,7 +17,6 @@ public class UTF_8 {
         for (int i = 0; i < input.length(); i++) {
             int codePoint = input.codePointAt(i);
             validateCodePoint(codePoint);
-
             if (codePoint < 0x80) {
                 buffer.append((byte) codePoint);
             } else if (codePoint < 0x800) {
@@ -33,7 +32,6 @@ public class UTF_8 {
                 buffer.append((byte) (0b10000000 | ((codePoint >> 6) & 0x3F)));
                 buffer.append((byte) (0b10000000 | (codePoint & 0x3F)));
             }
-
             if (Character.isHighSurrogate(input.charAt(i))) i++;
         }
         return buffer.toArray();
@@ -43,12 +41,10 @@ public class UTF_8 {
     public static String decode(byte[] bytes) {
         CharBuffer buffer = new CharBuffer(bytes.length);
         int index = 0;
-
         while (index < bytes.length) {
             int b = bytes[index++] & 0xFF;
             int codePoint;
             int remaining;
-
             if ((b & ONE_BYTE_MASK) == 0) {
                 codePoint = b;
                 remaining = 0;
@@ -64,7 +60,6 @@ public class UTF_8 {
             } else {
                 throw new IllegalArgumentException("Invalid UTF-8 byte: 0x" + Integer.toHexString(b));
             }
-
             for (int i = 0; i < remaining; i++) {
                 if (index >= bytes.length) throw new IllegalArgumentException("Truncated UTF-8 sequence");
                 int nextByte = bytes[index++] & 0xFF;
@@ -73,11 +68,9 @@ public class UTF_8 {
                 }
                 codePoint = (codePoint << 6) | (nextByte & 0x3F);
             }
-
             validateCodePoint(codePoint);
             appendCodePoint(buffer, codePoint);
         }
-
         return buffer.toString();
     }
 

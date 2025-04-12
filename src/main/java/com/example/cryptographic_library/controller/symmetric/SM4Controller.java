@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/sm4")
-@CrossOrigin(origins = "http://localhost:3000") // 允许React前端访问
+@CrossOrigin(origins = "http://localhost:3000")
 public class SM4Controller {
 
     @Autowired

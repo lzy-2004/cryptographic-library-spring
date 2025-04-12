@@ -1,6 +1,7 @@
 package com.example.cryptographic_library.service.hash;
 
 import com.example.cryptographic_library.algorithm.encode.Base64;
+import com.example.cryptographic_library.algorithm.encode.UTF_8;
 import com.example.cryptographic_library.algorithm.hash.RIPEMD160;
 import com.example.cryptographic_library.dto.hash.RIPEMD160Response;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class RIPEMD160Service {
 
     private byte[] computeRipemd160(String data) {
         RIPEMD160 md = new RIPEMD160();
-        md.update(data.getBytes()); // 使用UTF-8编码
+        md.update(UTF_8.encode(data));
         return md.digest();
     }
 

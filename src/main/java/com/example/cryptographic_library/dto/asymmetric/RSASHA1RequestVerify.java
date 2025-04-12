@@ -1,7 +1,6 @@
 package com.example.cryptographic_library.dto.asymmetric;
 
 public class RSASHA1RequestVerify {
-
     private String data;
     private String signature;
     private String publicKey;

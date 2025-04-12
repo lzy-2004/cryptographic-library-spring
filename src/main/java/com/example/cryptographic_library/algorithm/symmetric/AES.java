@@ -62,7 +62,7 @@ public class AES {
         this.roundKeys = keyExpansion(key);
     }
 
-    // CBC加密
+    // ECB加密
     public byte[] encrypt(byte[] plaintext) {
         byte[] padded = applyPadding(plaintext);
         byte[] ciphertext = new byte[padded.length];
@@ -78,7 +78,7 @@ public class AES {
         return ciphertext;
     }
 
-    // CBC解密
+    // ECB解密
     public byte[] decrypt(byte[] ciphertext) {
         byte[] plaintext = new byte[ciphertext.length];
         //byte[] prevBlock = Arrays.copyOf(iv, BLOCK_SIZE);
@@ -93,6 +93,28 @@ public class AES {
             //prevBlock = temp;
         }
         return removePadding(plaintext);
+    }
+
+    // 核心加密块处理
+    private void encryptBlock(byte[] state) {
+        addRoundKey(state, 0);
+        for (int round = 1; round <= rounds; round++) {
+            subBytes(state);
+            shiftRows(state);
+            if (round < rounds) mixColumns(state);
+            addRoundKey(state, round);
+        }
+    }
+
+    // 核心解密块处理
+    private void decryptBlock(byte[] state) {
+        addRoundKey(state, rounds);
+        for (int round = rounds - 1; round >= 0; round--) {
+            invShiftRows(state);
+            invSubBytes(state);
+            addRoundKey(state, round);
+            if (round > 0) invMixColumns(state);
+        }
     }
 
     // 轮密钥加
@@ -123,17 +145,17 @@ public class AES {
         byte[] temp = new byte[BLOCK_SIZE];
         // 第0行不移位
         System.arraycopy(state, 0, temp, 0, 4);
-        // 第1行左移1字节
+        // 第1行左移1 字节
         temp[4] = state[5];
         temp[5] = state[6];
         temp[6] = state[7];
         temp[7] = state[4];
-        // 第2行左移2字节
+        // 第2行左移2 字节
         temp[8] = state[10];
         temp[9] = state[11];
         temp[10] = state[8];
         temp[11] = state[9];
-        // 第3行左移3字节
+        // 第3行左移3 字节
         temp[12] = state[15];
         temp[13] = state[12];
         temp[14] = state[13];
@@ -146,17 +168,17 @@ public class AES {
         byte[] temp = new byte[BLOCK_SIZE];
         // 第0行不移位
         System.arraycopy(state, 0, temp, 0, 4);
-        // 第1行右移1字节
+        // 第1行右移1 字节
         temp[4] = state[7];
         temp[5] = state[4];
         temp[6] = state[5];
         temp[7] = state[6];
-        // 第2行右移2字节
+        // 第2行右移2 字节
         temp[8] = state[10];
         temp[9] = state[11];
         temp[10] = state[8];
         temp[11] = state[9];
-        // 第3行右移3字节
+        // 第3行右移3 字节
         temp[12] = state[13];
         temp[13] = state[14];
         temp[14] = state[15];
@@ -191,29 +213,6 @@ public class AES {
             state[i * 4 + 1] = (byte) (mul(0x09, s0) ^ mul(0x0e, s1) ^ mul(0x0b, s2) ^ mul(0x0d, s3));
             state[i * 4 + 2] = (byte) (mul(0x0d, s0) ^ mul(0x09, s1) ^ mul(0x0e, s2) ^ mul(0x0b, s3));
             state[i * 4 + 3] = (byte) (mul(0x0b, s0) ^ mul(0x0d, s1) ^ mul(0x09, s2) ^ mul(0x0e, s3));
-        }
-    }
-
-
-    // 核心加密块处理
-    private void encryptBlock(byte[] state) {
-        addRoundKey(state, 0);
-        for (int round = 1; round <= rounds; round++) {
-            subBytes(state);
-            shiftRows(state);
-            if (round < rounds) mixColumns(state);
-            addRoundKey(state, round);
-        }
-    }
-
-    // 核心解密块处理
-    private void decryptBlock(byte[] state) {
-        addRoundKey(state, rounds);
-        for (int round = rounds - 1; round >= 0; round--) {
-            invShiftRows(state);
-            invSubBytes(state);
-            addRoundKey(state, round);
-            if (round > 0) invMixColumns(state);
         }
     }
 

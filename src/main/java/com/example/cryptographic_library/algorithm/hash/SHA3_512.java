@@ -23,34 +23,28 @@ public class SHA3_512 {
 
     public static byte[] hash(byte[] input) {
         long[] state = new long[25]; // 5x5状态数组（每个元素64位）
-
         // 1. 消息填充
         byte[] padded = pad(input);
-
         // 2. 吸收阶段
         for (int offset = 0; offset < padded.length; offset += BITRATE / 8) {
             absorbBlock(padded, offset, state);
             keccakF(state); // 应用Keccak-f置换
         }
-
-        // 3. 挤压阶段（直接取前64字节）
+        // 3. 挤压阶段（直接取前64 字节）
         return squeeze(state);
     }
 
     // SHA3-512专用填充规则
     private static byte[] pad(byte[] input) {
-        int blockSize = BITRATE / 8; // 72字节
+        int blockSize = BITRATE / 8; // 72 字节
         int q = blockSize - (input.length % blockSize);
-
-        // 填充规则：0x06 + 0x00* + 0x80
         byte[] padded = Arrays.copyOf(input, input.length + (q == 1 ? blockSize : q));
-        padded[input.length] = 0x06; // 关键修正：使用0x06而不是0x01
+        padded[input.length] = 0x06;
         padded[padded.length - 1] = (byte) 0x80;
-
         return padded;
     }
 
-    // 吸收单个块（72字节）
+    // 吸收单个块（72 字节）
     private static void absorbBlock(byte[] block, int offset, long[] state) {
         for (int i = 0; i < BITRATE / 64; i++) {
             state[i] ^= toLane(block, offset + i * 8);
@@ -73,16 +67,14 @@ public class SHA3_512 {
         for (int x = 0; x < 5; x++) {
             c[x] = a[x] ^ a[x + 5] ^ a[x + 10] ^ a[x + 15] ^ a[x + 20];
         }
-
         long[] d = new long[5];
         for (int x = 0; x < 5; x++) {
-            int prev = (x + 4) % 5; // x-1 mod5
+            int prev = (x + 4) % 5;
             int next = (x + 1) % 5;
-            d[x] = c[prev] ^ Long.rotateLeft(c[next], 1); // 关键修正：使用异或
+            d[x] = c[prev] ^ Long.rotateLeft(c[next], 1);
         }
-
         for (int i = 0; i < 25; i++) {
-            a[i] ^= d[i % 5]; // 关键修正：使用异或
+            a[i] ^= d[i % 5];
         }
     }
 
@@ -90,7 +82,6 @@ public class SHA3_512 {
     private static void rhoPi(long[] a) {
         long[] temp = new long[25];
         System.arraycopy(a, 0, temp, 0, 25);
-
         int[] rotations = {
                 0, 1, 62, 28, 27,
                 36, 44, 6, 55, 20,
@@ -98,7 +89,6 @@ public class SHA3_512 {
                 41, 45, 15, 21, 8,
                 18, 2, 61, 56, 14
         };
-
         for (int i = 0; i < 25; i++) {
             int x = i % 5;
             int y = i / 5;
@@ -122,7 +112,7 @@ public class SHA3_512 {
         a[0] ^= RC[round];
     }
 
-    // 挤压输出（取前64字节）
+    // 挤压输出（取前64 字节）
     private static byte[] squeeze(long[] state) {
         byte[] output = new byte[OUTPUT_LENGTH];
         for (int i = 0; i < OUTPUT_LENGTH; i += 8) {
@@ -140,7 +130,7 @@ public class SHA3_512 {
         return value;
     }
 
-    // 小端字节序编码（long转8字节）
+    // 小端字节序编码（long转8 字节）
     private static void fromLane(long value, byte[] out, int offset) {
         for (int i = 0; i < 8; i++) {
             out[offset + i] = (byte) (value >> (i * 8));

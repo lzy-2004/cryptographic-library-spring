@@ -9,13 +9,11 @@ public class Base64 {
         StringBuilder result = new StringBuilder();
         int paddingCount = (3 - (data.length % 3)) % 3;
         int[] buffer = new int[3];
-
         for (int i = 0; i < data.length; i += 3) {
             // 将3个字节装入buffer
             buffer[0] = data[i] & 0xFF;
             buffer[1] = (i+1 < data.length) ? data[i+1] & 0xFF : 0;
             buffer[2] = (i+2 < data.length) ? data[i+2] & 0xFF : 0;
-
             // 转换为4个Base64字符
             int b64Index1 = buffer[0] >>> 2;
             int b64Index2 = ((buffer[0] & 0x03) << 4) | (buffer[1] >>> 4);
@@ -27,7 +25,6 @@ public class Base64 {
             result.append((i+1 < data.length) ? BASE64_CHARS.charAt(b64Index3) : "=");
             result.append((i+2 < data.length) ? BASE64_CHARS.charAt(b64Index4) : "=");
         }
-
         return result.toString();
     }
 
@@ -35,18 +32,15 @@ public class Base64 {
         if (encoded.length() % 4 != 0) {
             throw new IllegalArgumentException("Invalid Base64 string length");
         }
-
         int paddingCount = 0;
         if (encoded.endsWith("==")) {
             paddingCount = 2;
         } else if (encoded.endsWith("=")) {
             paddingCount = 1;
         }
-
         byte[] result = new byte[((encoded.length() * 3) / 4) - paddingCount];
         int[] buffer = new int[4];
         int resultIndex = 0;
-
         for (int i = 0; i < encoded.length(); i += 4) {
             // 填充处理
             for (int j = 0; j < 4; j++) {
@@ -61,7 +55,6 @@ public class Base64 {
                     buffer[j] = index;
                 }
             }
-
             // 转换为3个字节
             result[resultIndex++] = (byte) ((buffer[0] << 2) | (buffer[1] >>> 4));
             if (resultIndex < result.length) {
@@ -71,7 +64,6 @@ public class Base64 {
                 result[resultIndex++] = (byte) ((buffer[2] << 6) | buffer[3]);
             }
         }
-
         return result;
     }
 

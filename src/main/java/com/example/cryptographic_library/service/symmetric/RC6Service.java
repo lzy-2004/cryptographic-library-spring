@@ -3,7 +3,6 @@ package com.example.cryptographic_library.service.symmetric;
 import com.example.cryptographic_library.algorithm.encode.Base64;
 import com.example.cryptographic_library.algorithm.encode.UTF_8;
 import com.example.cryptographic_library.algorithm.symmetric.RC6;
-
 import com.example.cryptographic_library.dto.symmetric.RC6Response;
 
 import org.springframework.stereotype.Service;
@@ -24,8 +23,8 @@ public class RC6Service {
 
     /**
      * 执行加密操作
-     * @param key 加密密钥（UTF-8字符串，4-32字节）
-     * @param plaintext 明文数据（UTF-8编码）
+     * @param key 加密密钥（UTF-8 字符串，4-32 字节）
+     * @param plaintext 明文数据（UTF-8 编码）
      * @param encoding 输出编码格式（hex/base64）
      * @return 加密结果响应
      * @throws IllegalArgumentException 密钥长度不符合要求时抛出
@@ -33,8 +32,8 @@ public class RC6Service {
     public RC6Response encrypt(String key, String plaintext, String encoding) {
         try {
             validateKeyLength(UTF_8.encode(key));
-            RC6 rc6 = new RC6(UTF_8.encode(key)); // 修改点1
-            byte[] encrypted = rc6.encrypt(UTF_8.encode(plaintext)); // 修改点2
+            RC6 rc6 = new RC6(UTF_8.encode(key));
+            byte[] encrypted = rc6.encrypt(UTF_8.encode(plaintext));
 
             return new RC6Response(0, "加密成功", encodeResult(encrypted, encoding));
         } catch (Exception e) {
@@ -53,11 +52,11 @@ public class RC6Service {
     public RC6Response decrypt(String key, String ciphertext, String encoding) {
         try {
             validateKeyLength(UTF_8.encode(key));
-            RC6 rc6 = new RC6(UTF_8.encode(key)); // 修改点3
+            RC6 rc6 = new RC6(UTF_8.encode(key));
             byte[] data = decodeInput(ciphertext, encoding);
             byte[] decrypted = rc6.decrypt(data);
 
-            return new RC6Response(0, "解密成功", UTF_8.decode(decrypted)); // 修改点4
+            return new RC6Response(0, "解密成功", UTF_8.decode(decrypted));
         } catch (Exception e) {
             return new RC6Response(-1, "解密失败: " + e.getMessage(), null);
         }
@@ -93,8 +92,8 @@ public class RC6Service {
     }
 
     private void validateKeyLength(byte[] key) {
-        if (key.length < 4 || key.length > 32) {
-            throw new IllegalArgumentException("密钥长度需在4-32字节之间");
+        if (key.length < 4 || key.length > 16) {
+            throw new IllegalArgumentException("密钥长度需在4-16字节之间");
         }
     }
 }

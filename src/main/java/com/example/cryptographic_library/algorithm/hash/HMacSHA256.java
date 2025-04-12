@@ -25,10 +25,8 @@ public class HMacSHA256 {
         // 生成内外部填充密钥
         byte[] ipadKey = xorBytes(secretKey, IPAD);
         byte[] opadKey = xorBytes(secretKey, OPAD);
-
         // 计算内部哈希
         byte[] innerHash = sha256(concat(ipadKey, message));
-
         // 计算最终HMAC
         return sha256(concat(opadKey, innerHash));
     }

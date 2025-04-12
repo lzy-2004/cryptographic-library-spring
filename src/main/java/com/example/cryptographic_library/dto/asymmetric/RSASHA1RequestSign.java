@@ -1,7 +1,6 @@
 package com.example.cryptographic_library.dto.asymmetric;
 
 public class RSASHA1RequestSign {
-
     String data;
     String privateKey;
     String modulus;

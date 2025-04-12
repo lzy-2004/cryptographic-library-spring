@@ -19,25 +19,21 @@ public class SHA1 {
     public static byte[] hash(byte[] message) {
         // 消息填充
         byte[] padded = padMessage(message);
-
         // 初始化哈希值
         int h0 = H0;
         int h1 = H1;
         int h2 = H2;
         int h3 = H3;
         int h4 = H4;
-
         // 分块处理
         for (int i = 0; i < padded.length; i += 64) {
             int[] words = processBlock(padded, i);
-
             // 初始化工作变量
             int a = h0;
             int b = h1;
             int c = h2;
             int d = h3;
             int e = h4;
-
             // 主循环
             for (int t = 0; t < 80; t++) {
                 int temp = Integer.rotateLeft(a, 5) + f(t, b, c, d) + e + words[t] + K[t/20];
@@ -47,7 +43,6 @@ public class SHA1 {
                 b = a;
                 a = temp;
             }
-
             // 更新哈希值
             h0 += a;
             h1 += b;
@@ -55,7 +50,6 @@ public class SHA1 {
             h3 += d;
             h4 += e;
         }
-
         return toByteArray(h0, h1, h2, h3, h4);
     }
 
@@ -63,30 +57,25 @@ public class SHA1 {
     private static byte[] padMessage(byte[] message) {
         int originalBits = message.length * 8;
         int paddingBits = (448 - (originalBits + 1) % 512) % 512;
-
         byte[] padded = new byte[(originalBits + 1 + paddingBits + 64) / 8];
         System.arraycopy(message, 0, padded, 0, message.length);
         padded[message.length] = (byte)0x80; // 添加1的二进制位
-
         // 添加长度信息（64位大端）
         ByteBuffer.wrap(padded)
                 .position(padded.length - 8)
                 .putLong(originalBits);
-
         return padded;
     }
 
     // 处理512位块
     private static int[] processBlock(byte[] block, int offset) {
         int[] words = new int[80];
-
         // 初始16个字
         ByteBuffer buffer = ByteBuffer.wrap(block, offset, 64)
                 .order(ByteOrder.BIG_ENDIAN);
         for (int i = 0; i < 16; i++) {
             words[i] = buffer.getInt();
         }
-
         // 扩展剩余字
         for (int i = 16; i < 80; i++) {
             words[i] = Integer.rotateLeft(

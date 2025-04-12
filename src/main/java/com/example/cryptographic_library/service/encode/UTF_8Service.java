@@ -27,8 +27,7 @@ public class UTF_8Service {
     public UTF_8Response encode(String data, String encoding) {
         try {
             UTF_8 utf_8 = new UTF_8();
-            byte[] encoded = utf_8.encode(data); // 修改点2
-
+            byte[] encoded = utf_8.encode(data);
             if(encoding.equals("hex")){
                 return new UTF_8Response(0, "编码成功", bytesToHex(encoded));
             }else if(encoding.equals("binary")){

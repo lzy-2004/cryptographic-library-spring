@@ -21,32 +21,20 @@ public class PBKDF2Service {
 
     /**
      * 执行密钥派生
-     * @param password 用户密码（UTF-8编码）
-     * @param salt 盐值字符串（UTF-8编码）
+     * @param password 用户密码（UTF-8 编码）
+     * @param salt 盐值字符串（UTF-8 编码）
      * @param iterations 迭代次数（推荐≥10000）
-     * @param keyLength 派生密钥长度（16-1024字节）
+     * @param keyLength 派生密钥长度（16-1024 字节）
      * @param outputEncoding 输出格式（hex/base64）
      * @return 密钥派生结果
      * @throws IllegalArgumentException 参数不合法时抛出
      */
-    public PBKDF2Response deriveKey(String password,
-                                    String salt,
-                                    int iterations,
-                                    int keyLength,
-                                    String outputEncoding) {
+    public PBKDF2Response deriveKey(String password, String salt, int iterations, int keyLength, String outputEncoding) {
         try {
             validateParameters(password, salt, iterations, keyLength);
-            byte[] saltBytes = UTF_8.encode(salt); // 直接编码原始字符串
-
-            byte[] key = PBKDF2.deriveKey(
-                    password.toCharArray(),
-                    saltBytes,
-                    iterations,
-                    keyLength
-            );
-
-            return new PBKDF2Response(0, "密钥派生成功",
-                    encodeResult(key, outputEncoding));
+            byte[] saltBytes = UTF_8.encode(salt);
+            byte[] key = PBKDF2.deriveKey(password.toCharArray(), saltBytes, iterations, keyLength);
+            return new PBKDF2Response(0, "密钥派生成功", encodeResult(key, outputEncoding));
         } catch (IllegalArgumentException e) {
             return new PBKDF2Response(-1, e.getMessage(), null);
         } catch (Exception e) {
@@ -76,7 +64,6 @@ public class PBKDF2Service {
         throw new IllegalArgumentException("不支持的输出编码格式");
     }
 
-    // 优化后的HEX编码方法
     private static final char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
     private String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];

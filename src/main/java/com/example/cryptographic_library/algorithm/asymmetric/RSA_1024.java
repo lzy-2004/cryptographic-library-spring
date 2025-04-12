@@ -10,7 +10,6 @@ import com.example.cryptographic_library.algorithm.encode.UTF_8;
 
 public class RSA_1024 {
     private static final int KEY_SIZE = 1024;
-    //private static final BigInteger PUBLIC_EXPONENT = BigInteger.valueOf(65537);
 
     // RSA密钥对容器（使用自定义Base64序列化）
     public static class RSAKeyPair {
@@ -56,32 +55,27 @@ public class RSA_1024 {
      */
     public static RSAKeyPair generateKeyPair() {
         SecureRandom random = new SecureRandom();
-
         // 生成两个大素数（使用标准库的素数生成）
         BigInteger p = BigInteger.probablePrime(KEY_SIZE / 2, random);
         BigInteger q;
         do {
             q = BigInteger.probablePrime(KEY_SIZE / 2, random);
         } while (p.subtract(q).abs().bitLength() < KEY_SIZE / 4); // 安全素数间隔
-
         // 计算模数
         BigInteger n = p.multiply(q);
-
         // 计算欧拉函数
         BigInteger phi = p.subtract(BigInteger.ONE)
                 .multiply(q.subtract(BigInteger.ONE));
 
         BigInteger e;
         do {
-            e = BigInteger.probablePrime(17, random); // 生成17位随机素数
+            e = BigInteger.probablePrime(1024, random); // 生成1024位随机素数
         } while (
                 e.compareTo(phi) >= 0 ||          // e必须小于φ(n)
                         !e.gcd(phi).equals(BigInteger.ONE) // 必须满足e与φ(n)互质
         );
-
         // 计算私钥指数
         BigInteger d = e.modInverse(phi);
-
         return new RSAKeyPair(e, d, n);
     }
 
@@ -91,7 +85,7 @@ public class RSA_1024 {
      * @param plaintext 明文字节数组（需自行处理填充）
      */
     public static byte[] encrypt(byte[] plaintext, BigInteger publicKey, BigInteger modulus) {
-        int maxLength = modulus.bitLength() / 8 - 11; // 1024位密钥为117字节
+        int maxLength = modulus.bitLength() / 8 - 11; // 1024位密钥为117 字节
         byte[] padded = addPKCS1Padding(plaintext, maxLength + 11);
         BigInteger m = new BigInteger(1, padded);
         return m.modPow(publicKey, modulus).toByteArray();
@@ -103,16 +97,14 @@ public class RSA_1024 {
     public static byte[] decrypt(byte[] ciphertext, BigInteger privateKey, BigInteger modulus) {
         BigInteger c = new BigInteger(1, ciphertext);
         byte[] padded = c.modPow(privateKey, modulus).toByteArray();
-
         // 查找分隔符0x00
         int separator = -1;
-        for (int i = 2; i < padded.length; i++) { // 跳过前导0x00 0x02
+        for (int i = 2; i < padded.length; i++) {
             if (padded[i] == 0x00) {
                 separator = i;
                 break;
             }
         }
-
         if (separator == -1) throw new IllegalArgumentException("无效填充");
         return Arrays.copyOfRange(padded, separator + 1, padded.length);
     }
@@ -182,7 +174,7 @@ public class RSA_1024 {
         System.out.println("解密验证结果: " + message.equals(UTF_8.decode(decrypted)));
     }
 
-    // 字节数组转HEX字符串（添加到类中）
+    // 字节数组转HEX字符串
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {

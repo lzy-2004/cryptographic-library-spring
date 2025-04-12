@@ -3,8 +3,8 @@ package com.example.cryptographic_library.service.symmetric;
 import com.example.cryptographic_library.algorithm.encode.Base64;
 import com.example.cryptographic_library.algorithm.encode.UTF_8;
 import com.example.cryptographic_library.algorithm.symmetric.SM4;
-
 import com.example.cryptographic_library.dto.symmetric.SM4Response;
+
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,7 +24,7 @@ public class SM4Service {
     /**
      * 执行加密操作
      * @param key 加密密钥（必须16字节ASCII字符串）
-     * @param plaintext 明文数据（UTF-8编码）
+     * @param plaintext 明文数据（UTF-8 编码）
      * @param encoding 输出编码格式（hex/base64）
      * @return 加密结果响应
      * @throws IllegalArgumentException 密钥格式错误时抛出
@@ -32,8 +32,8 @@ public class SM4Service {
     public SM4Response encrypt(String key, String plaintext, String encoding) {
         try {
             validateKey(key);
-            SM4 sm4 = new SM4(UTF_8.encode(key)); // 修改点1
-            byte[] encrypted = sm4.encrypt(UTF_8.encode(plaintext)); // 修改点2
+            SM4 sm4 = new SM4(UTF_8.encode(key));
+            byte[] encrypted = sm4.encrypt(UTF_8.encode(plaintext));
 
             return new SM4Response(0, "加密成功", encodeResult(encrypted, encoding));
         } catch (Exception e) {
@@ -52,11 +52,11 @@ public class SM4Service {
     public SM4Response decrypt(String key, String ciphertext, String encoding) {
         try {
             validateKey(key);
-            SM4 sm4 = new SM4(UTF_8.encode(key)); // 修改点3
+            SM4 sm4 = new SM4(UTF_8.encode(key));
             byte[] data = decodeInput(ciphertext, encoding);
             byte[] decrypted = sm4.decrypt(data);
 
-            return new SM4Response(0, "解密成功", UTF_8.decode(decrypted)); // 修改点4
+            return new SM4Response(0, "解密成功", UTF_8.decode(decrypted));
         } catch (Exception e) {
             return new SM4Response(-1, "解密失败: " + e.getMessage(), null);
         }

@@ -15,10 +15,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/ripemd160")
 @CrossOrigin(origins = "http://localhost:3000")
 public class RIPEMD160Controller {
-
     @Autowired
     private RIPEMD160Service ripemd160Service;
-
     /**
      * 计算RIPEMD-160哈希值
      * @param request 包含原始数据和输出编码的请求体

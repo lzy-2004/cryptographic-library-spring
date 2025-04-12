@@ -38,7 +38,7 @@ public class ECC160Controller {
      *                - publicKey: Base64编码的接收方公钥
      *                - plaintext: Base64编码的待加密原始数据
      * @return 加密响应实体，data字段包含Base64编码的加密结果（临时公钥+密文组合）
-     * @apiNote 加密结果格式：前20字节为临时公钥，剩余部分为加密数据
+     * @apiNote 加密结果格式：前20 字节为临时公钥，剩余部分为加密数据
      */
     @PostMapping("/encrypt")
     public ResponseEntity<ECC160DTO.CryptoResponse> encrypt(

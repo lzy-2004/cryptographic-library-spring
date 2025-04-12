@@ -14,15 +14,14 @@ import org.springframework.stereotype.Service;
 public class Base64Service {
     /**
      * 执行Base64编码
-     * @param data 待编码的原始字符串（UTF-8格式）
+     * @param data 待编码的原始字符串（UTF-8 格式）
      * @return 编码操作结果响应
      * @see Base64#encode(byte[])
      */
     public Base64Response encode(String data) {
         try {
             Base64 base64 = new Base64();
-            String encrypted = base64.encode(UTF_8.encode(data)); // 修改点2
-
+            String encrypted = base64.encode(UTF_8.encode(data));
             return new Base64Response(0, "编码成功", encrypted);
         } catch (Exception e) {
             return new Base64Response(-1, "编码失败: " + e.getMessage(), null);
@@ -39,10 +38,8 @@ public class Base64Service {
      */
     public Base64Response decode(String data) {
         try {
-            Base64 base64 = new Base64(); // 修改点3
-
+            Base64 base64 = new Base64();
             byte[] decrypted = base64.decode(data);
-
             return new Base64Response(0, "解码成功", UTF_8.decode(decrypted));
         } catch (Exception e) {
             return new Base64Response(-1, "解码失败: " + e.getMessage(), null);

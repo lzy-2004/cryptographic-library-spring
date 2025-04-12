@@ -1,6 +1,5 @@
 package com.example.cryptographic_library.algorithm.symmetric;
 
-import com.example.cryptographic_library.algorithm.encode.Base64;
 import com.example.cryptographic_library.algorithm.encode.UTF_8;
 
 import java.nio.ByteBuffer;
@@ -36,13 +35,13 @@ public class RC6 {
         return padded;
     }
 
-    // 完整加密流程（自动填充）
+    // 完整加密流程
     public byte[] encrypt(byte[] plaintext) {
         byte[] padded = pkcs7Pad(plaintext, BLOCK_BYTES);
         return processBlocks(padded, true);
     }
 
-    // 完整解密流程（自动去填充）
+    // 完整解密流程
     public byte[] decrypt(byte[] ciphertext) {
         byte[] decrypted = processBlocks(ciphertext, false);
         return pkcs7Unpad(decrypted);
@@ -79,14 +78,13 @@ public class RC6 {
 
         return output.array();
     }
-
-    // 以下是RC6核心算法实现-----------------------------------------
     private void validateKey(byte[] key) {
         if (key.length > KEY_LEN / 8) {
             throw new IllegalArgumentException("密钥长度不能超过128位（16字节）");
         }
     }
 
+    // 以下是RC6核心算法实现-----------------------------------------
     private int[] keySchedule(byte[] key) {
         int c = key.length / 4;
         int[] l = new int[c];
@@ -215,7 +213,7 @@ public class RC6 {
         byte[] plaintext = UTF_8.encode("This is a test.");
         RC6 rc6 = new RC6(key);
 
-        // 加密（自动填充到16字节）
+        // 加密（自动填充到16 字节）
         byte[] ciphertext = rc6.encrypt(plaintext);
         System.out.println("加密结果（十六进制）: " + bytesToHex(ciphertext));
 

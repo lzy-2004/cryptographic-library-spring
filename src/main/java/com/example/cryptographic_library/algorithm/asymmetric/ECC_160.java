@@ -42,7 +42,7 @@ public class ECC_160 {
     }
 
     public static class KeyPair {
-        public final byte[] publicKey; // 压缩公钥（仅x坐标）
+        public final byte[] publicKey;
         public final byte[] privateKey;
 
         public KeyPair(byte[] publicKey, byte[] privateKey) {
@@ -115,16 +115,18 @@ public class ECC_160 {
     public static KeyPair generateKeyPair() {
         SecureRandom random = new SecureRandom();
         BigInteger privateKey;
+        ECPoint publicKeyPoint;
 
-        // 生成合法私钥 (1 <= privateKey < n)
         do {
-            privateKey = new BigInteger(n.bitLength(), random);
-        } while (privateKey.compareTo(BigInteger.ONE) < 0 || privateKey.compareTo(n) >= 0);
+            // 生成合法私钥 (1 <= privateKey < n)
+            do {
+                privateKey = new BigInteger(n.bitLength(), random);
+            } while (privateKey.compareTo(BigInteger.ONE) < 0 || privateKey.compareTo(n) >= 0);
+            // 计算公钥点
+            publicKeyPoint = scalarMultiply(privateKey, G);
+        } while (!isPointOnCurve(publicKeyPoint)); // 确保公钥在曲线上
 
-        // 计算公钥
-        ECPoint publicKeyPoint = scalarMultiply(privateKey, G);
         byte[] publicKey = publicKeyPoint.x.toByteArray();
-
         return new KeyPair(publicKey, privateKey.toByteArray());
     }
 
@@ -136,18 +138,14 @@ public class ECC_160 {
             // 1. 重建公钥点
             BigInteger pubX = new BigInteger(1, publicKey);
             ECPoint publicKeyPoint = reconstructPoint(pubX);
-
             // 2. 生成临时密钥对
             KeyPair ephemeral = generateKeyPair();
             BigInteger ephemeralPrivate = new BigInteger(1, ephemeral.privateKey);
-
             // 3. 计算共享密钥
             ECPoint sharedPoint = scalarMultiply(ephemeralPrivate, publicKeyPoint);
             byte[] sharedSecret = sha256(sharedPoint.x.toByteArray());
-
-            // 4. 加密数据 (AES简化版)
+            // 4. 加密数据
             byte[] encrypted = xorEncrypt(plaintext, sharedSecret);
-
             return new Ciphertext(ephemeral.publicKey, encrypted);
         } catch (Exception e) {
             throw new RuntimeException("加密失败", e);
@@ -162,12 +160,10 @@ public class ECC_160 {
             // 1. 重建临时公钥点
             BigInteger ephemeralX = new BigInteger(1, ciphertext.ephemeralPubKey);
             ECPoint ephemeralPoint = reconstructPoint(ephemeralX);
-
             // 2. 计算共享密钥
             BigInteger priv = new BigInteger(1, privateKey);
             ECPoint sharedPoint = scalarMultiply(priv, ephemeralPoint);
             byte[] sharedSecret = sha256(sharedPoint.x.toByteArray());
-
             // 3. 解密数据
             return xorEncrypt(ciphertext.encryptedData, sharedSecret);
         } catch (Exception e) {
@@ -274,6 +270,15 @@ public class ECC_160 {
         return x;
     }
 
+    private static boolean isPointOnCurve(ECPoint point) {
+        if (point.isInfinity()) return true;
+        BigInteger lhs = point.y.pow(2).mod(p);
+        BigInteger rhs = point.x.pow(3)
+                .add(a.multiply(point.x))
+                .add(b)
+                .mod(p);
+        return lhs.equals(rhs);
+    }
     // ------------------------ 测试用例 ------------------------
 
     public static void main(String[] args) {
@@ -334,14 +339,6 @@ public class ECC_160 {
         System.out.println("大消息测试: " + Arrays.equals(bigData, pt));
     }
 
-    private static boolean isPointOnCurve(ECPoint point) {
-        if (point.isInfinity()) return true;
-        BigInteger lhs = point.y.pow(2).mod(p);
-        BigInteger rhs = point.x.pow(3)
-                .add(a.multiply(point.x))
-                .add(b)
-                .mod(p);
-        return lhs.equals(rhs);
-    }
+
 }
 

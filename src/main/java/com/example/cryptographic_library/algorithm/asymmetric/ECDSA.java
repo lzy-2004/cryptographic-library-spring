@@ -102,25 +102,21 @@ public class ECDSA {
             BigInteger r = new BigInteger(1, sig.r);
             BigInteger s = new BigInteger(1, sig.s);
             if (!validateSignatureRange(r, s)) return false;
-
             // 2. 重建公钥点
             ECPoint publicKeyPoint = new ECPoint(
                     new BigInteger(1, keyPair.publicKeyX),
                     new BigInteger(1, keyPair.publicKeyY)
             );
-
             // 3. 计算中间值
             BigInteger e = new BigInteger(1, sha256(message)).mod(n);
             BigInteger w = s.modInverse(n);
             BigInteger u1 = e.multiply(w).mod(n);
             BigInteger u2 = r.multiply(w).mod(n);
-
             // 4. 点运算
             ECPoint point = addPoints(
                     scalarMultiply(u1, G),
                     scalarMultiply(u2, publicKeyPoint)
             );
-
             return r.equals(point.x.mod(n));
         } catch (Exception ex) {
             return false;

@@ -28,15 +28,12 @@ public class SHA256 {
     public static byte[] hash(byte[] message) {
         // 消息填充
         byte[] padded = padMessage(message);
-
         // 初始化哈希值
         int[] hash = INIT_HASH.clone();
-
         // 分块处理
         for (int i = 0; i < padded.length; i += 64) {
             processBlock(padded, i, hash);
         }
-
         return toByteArray(hash);
     }
 
@@ -62,19 +59,16 @@ public class SHA256 {
         int[] w = new int[64];
         ByteBuffer buffer = ByteBuffer.wrap(block, offset, 64)
                 .order(ByteOrder.BIG_ENDIAN);
-
         // 前16个字
         for (int i = 0; i < 16; i++) {
             w[i] = buffer.getInt();
         }
-
         // 扩展剩余字
         for (int i = 16; i < 64; i++) {
             int s0 = rotr(w[i-15], 7) ^ rotr(w[i-15], 18) ^ (w[i-15] >>> 3);
             int s1 = rotr(w[i-2], 17) ^ rotr(w[i-2], 19) ^ (w[i-2] >>> 10);
             w[i] = w[i-16] + s0 + w[i-7] + s1;
         }
-
         // 初始化工作变量
         int a = hash[0];
         int b = hash[1];
@@ -84,7 +78,6 @@ public class SHA256 {
         int f = hash[5];
         int g = hash[6];
         int h = hash[7];
-
         // 主循环
         for (int i = 0; i < 64; i++) {
             int S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
@@ -93,7 +86,6 @@ public class SHA256 {
             int S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
             int maj = (a & b) ^ (a & c) ^ (b & c);
             int temp2 = S0 + maj;
-
             h = g;
             g = f;
             f = e;
@@ -103,7 +95,6 @@ public class SHA256 {
             b = a;
             a = temp1 + temp2;
         }
-
         // 更新哈希值
         hash[0] += a;
         hash[1] += b;

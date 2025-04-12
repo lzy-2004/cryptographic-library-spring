@@ -24,22 +24,11 @@ public class PBKDF2Controller {
      * @param request 包含密码、盐值、迭代次数等参数的请求体
      * @return 派生密钥结果响应
      * @apiNote 示例请求：
-     * {
-     *   "password": "myPassword123",
-     *   "salt": "base64SaltString",
-     *   "iterations": 10000,
-     *   "keyLength": 32,
-     *   "outputEncoding": "hex"
-     * }
+     * {"password": "myPassword123","salt": "base64SaltString","iterations": 10000,"keyLength": 32,"outputEncoding": "hex"}
      */
     @PostMapping("/encrypt")
     public PBKDF2Response deriveKey(@RequestBody PBKDF2Request request) {
-        return pbkdf2Service.deriveKey(
-                request.getPassword(),
-                request.getSalt(),
-                request.getIterations(),
-                request.getKeyLength(),
-                request.getOutputEncoding()
-        );
+        return pbkdf2Service.deriveKey(request.getPassword(), request.getSalt(), request.getIterations(),
+                request.getKeyLength(), request.getOutputEncoding());
     }
 }

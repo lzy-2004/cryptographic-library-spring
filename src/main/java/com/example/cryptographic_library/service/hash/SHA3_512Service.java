@@ -1,6 +1,7 @@
 package com.example.cryptographic_library.service.hash;
 
 import com.example.cryptographic_library.algorithm.encode.Base64;
+import com.example.cryptographic_library.algorithm.encode.UTF_8;
 import com.example.cryptographic_library.algorithm.hash.SHA3_512;
 import com.example.cryptographic_library.dto.hash.SHA3_512Response;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class SHA3_512Service {
     public SHA3_512Response hash(String data, String encoding) {
         try {
             validateInput(data, encoding);
-            byte[] hashBytes = SHA3_512.hash(data.getBytes());
+            byte[] hashBytes = SHA3_512.hash(UTF_8.encode(data));
             return new SHA3_512Response(0, "哈希计算成功", encodeResult(hashBytes, encoding));
         } catch (IllegalArgumentException e) {
             return new SHA3_512Response(-1, e.getMessage(), null);

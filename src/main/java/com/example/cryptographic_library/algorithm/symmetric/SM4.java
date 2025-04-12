@@ -140,7 +140,7 @@ public class SM4 {
         return wordsToBytes(new int[]{x[3], x[2], x[1], x[0]});
     }
 
-    // S盒置换（4字节处理）
+    // S盒置换（4 字节处理）
     private int sBoxTrans(int word) {
         int result = 0;
         for (int i = 0; i < 4; i++) {
@@ -155,7 +155,7 @@ public class SM4 {
         return (x << n) | (x >>> (32 - n));
     }
 
-    // 以下为辅助方法（与RC6类似）-------------------------
+    // 以下为辅助方法-------------------------
     private void validateKey(byte[] key) {
         if (key.length != 16) {
             throw new IllegalArgumentException("密钥必须为128位（16字节）");

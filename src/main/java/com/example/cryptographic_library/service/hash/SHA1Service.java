@@ -1,6 +1,7 @@
 package com.example.cryptographic_library.service.hash;
 
 import com.example.cryptographic_library.algorithm.encode.Base64;
+import com.example.cryptographic_library.algorithm.encode.UTF_8;
 import com.example.cryptographic_library.algorithm.hash.SHA1;
 import com.example.cryptographic_library.dto.hash.SHA1Response;
 import org.springframework.stereotype.Service;
@@ -19,14 +20,14 @@ import org.springframework.stereotype.Service;
 public class SHA1Service {
     /**
      * 执行哈希计算
-     * @param data 原始输入字符串（UTF-8编码）
+     * @param data 原始输入字符串（UTF-8 编码）
      * @param encoding 输出编码格式（hex/base64）
      * @return 哈希结果响应
      * @throws IllegalArgumentException 输入为空或编码格式不支持时抛出
      */
     public SHA1Response hash(String data, String encoding) {
         try {
-            byte[] hashBytes = SHA1.hash(data.getBytes());
+            byte[] hashBytes = SHA1.hash(UTF_8.encode(data));
             String result = encodeResult(hashBytes, encoding);
             return new SHA1Response(0, "哈希计算成功", result);
         } catch (Exception e) {

@@ -21,16 +21,16 @@ import org.springframework.stereotype.Service;
 public class AESService {
     /**
      * 执行加密操作
-     * @param key 加密密钥（UTF-8字符串，长度16/24/32字节）
-     * @param plaintext 明文数据（UTF-8编码）
+     * @param key 加密密钥（UTF-8 字符串，长度16/24/32 字节）
+     * @param plaintext 明文数据（UTF-8 编码）
      * @param encoding 输出编码格式（hex/base64）
      * @return 加密结果响应
      * @throws IllegalArgumentException 密钥长度不符合要求时抛出
      */
     public AESResponse encrypt(String key, String plaintext, String encoding) {
         try {
-            AES aes = new AES(UTF_8.encode(key)); // 修改点1
-            byte[] encrypted = aes.encrypt(UTF_8.encode(plaintext)); // 修改点2
+            AES aes = new AES(UTF_8.encode(key));
+            byte[] encrypted = aes.encrypt(UTF_8.encode(plaintext));
 
             return new AESResponse(0, "加密成功", encodeResult(encrypted, encoding));
         } catch (Exception e) {
@@ -48,7 +48,7 @@ public class AESService {
      */
     public AESResponse decrypt(String key, String ciphertext, String encoding) {
         try {
-            AES aes = new AES(UTF_8.encode(key)); // 修改点3
+            AES aes = new AES(UTF_8.encode(key));
             byte[] data = decodeInput(ciphertext, encoding);
             byte[] decrypted = aes.decrypt(data);
 

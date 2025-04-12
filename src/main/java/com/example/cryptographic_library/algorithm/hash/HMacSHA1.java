@@ -25,7 +25,6 @@ public class HMacSHA1 {
             // 密钥过长时先进行SHA-1哈希
             key = sha1(key);
         }
-
         if (key.length < BLOCK_SIZE) {
             // 密钥过短时补零
             byte[] paddedKey = new byte[BLOCK_SIZE];

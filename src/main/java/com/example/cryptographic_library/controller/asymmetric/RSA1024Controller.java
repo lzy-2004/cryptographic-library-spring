@@ -19,7 +19,7 @@ public class RSA1024Controller {
      *         - publicKey: 公钥（指数e）
      *         - privateKey: 私钥（指数d）
      *         - modulus: 模数n
-     * @apiNote 密钥对使用PKCS#1标准生成，模数为1024位，适用于加密/解密操作
+     * @apiNote 密钥对使用PKCS#1 标准生成，模数为1024位，适用于加密/解密操作
      */
     @GetMapping("/keypair")
     public RSA1024KeyPair generateKeyPair(){
@@ -36,7 +36,7 @@ public class RSA1024Controller {
      *         - status: 操作状态码（0成功，-1失败）
      *         - message: 操作结果描述
      *         - result: 加密结果（根据encoding参数编码）
-     * @apiNote 数据加密使用PKCS#1 v1.5填充方案，明文长度限制为117字节
+     * @apiNote 数据加密使用PKCS#1 v1.5填充方案，明文长度限制为117 字节
      */
     @PostMapping("/encrypt")
     public RSA1024Response encrypt(@RequestBody RSA1024Request request){
