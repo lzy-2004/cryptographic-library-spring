@@ -42,17 +42,30 @@ public class ECC160DTO {
      *
      * <p>要求：
      * <ul>
-     *   <li>publicKey: 有效ECC160公钥</li>
-     *   <li>plaintext: Base64编码明文（最大256KB）</li>
+     *   <li>publicKey: 有效ECC160公钥（Base64编码）</li>
+     *   <li>plaintext: 任意字符串格式明文（最大256KB）</li>
+     *   <li>isBase64: 明文是否已经是Base64编码（默认false）</li>
      * </ul>
      */
     public static class EncryptRequest {
         private String publicKey;  // Base64
-        private String plaintext; // Base64
+        private String plaintext; // 普通字符串或Base64
+        private boolean isBase64; // 标识明文是否已经是Base64编码
+
+        public EncryptRequest() {
+            // 默认构造函数
+        }
 
         public EncryptRequest(String publicKey, String plaintext) {
             this.publicKey = publicKey;
             this.plaintext = plaintext;
+            this.isBase64 = false; // 默认为普通字符串
+        }
+
+        public EncryptRequest(String publicKey, String plaintext, boolean isBase64) {
+            this.publicKey = publicKey;
+            this.plaintext = plaintext;
+            this.isBase64 = isBase64;
         }
 
         public String getPublicKey() {
@@ -69,6 +82,14 @@ public class ECC160DTO {
 
         public void setPlaintext(String plaintext) {
             this.plaintext = plaintext;
+        }
+
+        public boolean isBase64() {
+            return isBase64;
+        }
+
+        public void setBase64(boolean base64) {
+            isBase64 = base64;
         }
     }
     /**
@@ -113,14 +134,22 @@ public class ECC160DTO {
      * <p>data字段说明：
      * <ul>
      *   <li>加密时：Base64(临时公钥20B || 密文)</li>
-     *   <li>解密时：Base64(原始明文)</li>
+     *   <li>解密时：原始明文字符串</li>
+     *   <li>isBase64: 标识结果是否是Base64编码（解密时有效）</li>
      * </ul>
      */
     public static class CryptoResponse {
-        private String data; // Base64
+        private String data; // Base64或原始字符串
+        private boolean isBase64; // 标识数据是否是Base64编码
 
         public CryptoResponse(String data) {
             this.data = data;
+            this.isBase64 = true; // 默认为Base64
+        }
+
+        public CryptoResponse(String data, boolean isBase64) {
+            this.data = data;
+            this.isBase64 = isBase64;
         }
 
         public String getData() {
@@ -129,6 +158,14 @@ public class ECC160DTO {
 
         public void setData(String data) {
             this.data = data;
+        }
+
+        public boolean isBase64() {
+            return isBase64;
+        }
+
+        public void setBase64(boolean base64) {
+            isBase64 = base64;
         }
     }
 }

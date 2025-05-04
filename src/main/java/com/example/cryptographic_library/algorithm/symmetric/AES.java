@@ -96,7 +96,7 @@ public class AES {
     }
 
     // 核心加密块处理
-    private void encryptBlock(byte[] state) {
+    public void encryptBlock(byte[] state) {
         addRoundKey(state, 0);
         for (int round = 1; round <= rounds; round++) {
             subBytes(state);
@@ -107,7 +107,7 @@ public class AES {
     }
 
     // 核心解密块处理
-    private void decryptBlock(byte[] state) {
+    public void decryptBlock(byte[] state) {
         addRoundKey(state, rounds);
         for (int round = rounds - 1; round >= 0; round--) {
             invShiftRows(state);
@@ -119,10 +119,12 @@ public class AES {
 
     // 轮密钥加
     private void addRoundKey(byte[] state, int round) {
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            int word = roundKeys[round][i / 4];
-            byte keyByte = (byte) ((word >>> (24 - 8 * (i % 4))) & 0xFF);
-            state[i] ^= keyByte;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                // 状态数组是按列顺序排列的
+                // state[i*4+j]表示第j行第i列的值
+                state[i*4 + j] ^= ((roundKeys[round][i] >>> (24 - 8 * j)) & 0xFF);
+            }
         }
     }
 
@@ -143,83 +145,115 @@ public class AES {
     // 行移位（加密用）
     private void shiftRows(byte[] state) {
         byte[] temp = new byte[BLOCK_SIZE];
+        
+        // 注意：state是按列存储的（AES标准），所以需要正确映射索引
+        
         // 第0行不移位
-        System.arraycopy(state, 0, temp, 0, 4);
-        // 第1行左移1 字节
-        temp[4] = state[5];
-        temp[5] = state[6];
-        temp[6] = state[7];
-        temp[7] = state[4];
-        // 第2行左移2 字节
-        temp[8] = state[10];
-        temp[9] = state[11];
-        temp[10] = state[8];
-        temp[11] = state[9];
-        // 第3行左移3 字节
-        temp[12] = state[15];
-        temp[13] = state[12];
-        temp[14] = state[13];
-        temp[15] = state[14];
+        temp[0] = state[0];  // (0,0)
+        temp[4] = state[4];  // (0,1)  
+        temp[8] = state[8];  // (0,2)
+        temp[12] = state[12]; // (0,3)
+        
+        // 第1行左移1字节
+        temp[1] = state[5];  // (1,0) <- (1,1)
+        temp[5] = state[9];  // (1,1) <- (1,2)
+        temp[9] = state[13]; // (1,2) <- (1,3)
+        temp[13] = state[1]; // (1,3) <- (1,0)
+        
+        // 第2行左移2字节
+        temp[2] = state[10]; // (2,0) <- (2,2)
+        temp[6] = state[14]; // (2,1) <- (2,3)
+        temp[10] = state[2]; // (2,2) <- (2,0)
+        temp[14] = state[6]; // (2,3) <- (2,1)
+        
+        // 第3行左移3字节
+        temp[3] = state[15]; // (3,0) <- (3,3)
+        temp[7] = state[3];  // (3,1) <- (3,0)
+        temp[11] = state[7]; // (3,2) <- (3,1)
+        temp[15] = state[11]; // (3,3) <- (3,2)
+        
         System.arraycopy(temp, 0, state, 0, BLOCK_SIZE);
     }
 
     // 逆行移位（解密用）
     private void invShiftRows(byte[] state) {
         byte[] temp = new byte[BLOCK_SIZE];
+        
         // 第0行不移位
-        System.arraycopy(state, 0, temp, 0, 4);
-        // 第1行右移1 字节
-        temp[4] = state[7];
-        temp[5] = state[4];
-        temp[6] = state[5];
-        temp[7] = state[6];
-        // 第2行右移2 字节
-        temp[8] = state[10];
-        temp[9] = state[11];
-        temp[10] = state[8];
-        temp[11] = state[9];
-        // 第3行右移3 字节
-        temp[12] = state[13];
-        temp[13] = state[14];
-        temp[14] = state[15];
-        temp[15] = state[12];
+        temp[0] = state[0];
+        temp[4] = state[4];
+        temp[8] = state[8];
+        temp[12] = state[12];
+        
+        // 第1行右移1字节
+        temp[1] = state[13];
+        temp[5] = state[1];
+        temp[9] = state[5];
+        temp[13] = state[9];
+        
+        // 第2行右移2字节
+        temp[2] = state[10];
+        temp[6] = state[14];
+        temp[10] = state[2];
+        temp[14] = state[6];
+        
+        // 第3行右移3字节
+        temp[3] = state[7];
+        temp[7] = state[11];
+        temp[11] = state[15];
+        temp[15] = state[3];
+        
         System.arraycopy(temp, 0, state, 0, BLOCK_SIZE);
     }
 
     // 列混淆（加密用）
     private void mixColumns(byte[] state) {
-        for (int i = 0; i < 4; i++) {
-            int s0 = state[i * 4] & 0xFF;
-            int s1 = state[i * 4 + 1] & 0xFF;
-            int s2 = state[i * 4 + 2] & 0xFF;
-            int s3 = state[i * 4 + 3] & 0xFF;
-
-            state[i * 4] = (byte) (mul(0x02, s0) ^ mul(0x03, s1) ^ s2 ^ s3);
-            state[i * 4 + 1] = (byte) (s0 ^ mul(0x02, s1) ^ mul(0x03, s2) ^ s3);
-            state[i * 4 + 2] = (byte) (s0 ^ s1 ^ mul(0x02, s2) ^ mul(0x03, s3));
-            state[i * 4 + 3] = (byte) (mul(0x03, s0) ^ s1 ^ s2 ^ mul(0x02, s3));
+        for (int c = 0; c < 4; c++) {
+            int col = c * 4;
+            byte s0 = state[col];
+            byte s1 = state[col + 1];
+            byte s2 = state[col + 2];
+            byte s3 = state[col + 3];
+            
+            byte t0 = (byte)(mul(0x02, s0 & 0xff) ^ mul(0x03, s1 & 0xff) ^ (s2 & 0xff) ^ (s3 & 0xff));
+            byte t1 = (byte)((s0 & 0xff) ^ mul(0x02, s1 & 0xff) ^ mul(0x03, s2 & 0xff) ^ (s3 & 0xff));
+            byte t2 = (byte)((s0 & 0xff) ^ (s1 & 0xff) ^ mul(0x02, s2 & 0xff) ^ mul(0x03, s3 & 0xff));
+            byte t3 = (byte)(mul(0x03, s0 & 0xff) ^ (s1 & 0xff) ^ (s2 & 0xff) ^ mul(0x02, s3 & 0xff));
+            
+            state[col] = t0;
+            state[col + 1] = t1;
+            state[col + 2] = t2;
+            state[col + 3] = t3;
         }
     }
 
     // 逆列混淆（解密用）
     private void invMixColumns(byte[] state) {
-        for (int i = 0; i < 4; i++) {
-            int s0 = state[i * 4] & 0xFF;
-            int s1 = state[i * 4 + 1] & 0xFF;
-            int s2 = state[i * 4 + 2] & 0xFF;
-            int s3 = state[i * 4 + 3] & 0xFF;
-
-            state[i * 4] = (byte) (mul(0x0e, s0) ^ mul(0x0b, s1) ^ mul(0x0d, s2) ^ mul(0x09, s3));
-            state[i * 4 + 1] = (byte) (mul(0x09, s0) ^ mul(0x0e, s1) ^ mul(0x0b, s2) ^ mul(0x0d, s3));
-            state[i * 4 + 2] = (byte) (mul(0x0d, s0) ^ mul(0x09, s1) ^ mul(0x0e, s2) ^ mul(0x0b, s3));
-            state[i * 4 + 3] = (byte) (mul(0x0b, s0) ^ mul(0x0d, s1) ^ mul(0x09, s2) ^ mul(0x0e, s3));
+        for (int c = 0; c < 4; c++) {
+            int col = c * 4;
+            byte s0 = state[col];
+            byte s1 = state[col + 1];
+            byte s2 = state[col + 2];
+            byte s3 = state[col + 3];
+            
+            byte t0 = (byte)(mul(0x0e, s0 & 0xff) ^ mul(0x0b, s1 & 0xff) ^ mul(0x0d, s2 & 0xff) ^ mul(0x09, s3 & 0xff));
+            byte t1 = (byte)(mul(0x09, s0 & 0xff) ^ mul(0x0e, s1 & 0xff) ^ mul(0x0b, s2 & 0xff) ^ mul(0x0d, s3 & 0xff));
+            byte t2 = (byte)(mul(0x0d, s0 & 0xff) ^ mul(0x09, s1 & 0xff) ^ mul(0x0e, s2 & 0xff) ^ mul(0x0b, s3 & 0xff));
+            byte t3 = (byte)(mul(0x0b, s0 & 0xff) ^ mul(0x0d, s1 & 0xff) ^ mul(0x09, s2 & 0xff) ^ mul(0x0e, s3 & 0xff));
+            
+            state[col] = t0;
+            state[col + 1] = t1;
+            state[col + 2] = t2;
+            state[col + 3] = t3;
         }
     }
 
     // 密钥扩展实现
     private int[][] keyExpansion(byte[] key) {
         int nk = key.length / 4;
-        int[] w = new int[4 * (rounds + 1)];
+        int nb = 4; // AES block size always 4 words (128 bits)
+        int nr = rounds;
+        int[] w = new int[nb * (nr + 1)];
 
         // 初始密钥拷贝
         for (int i = 0; i < nk; i++) {
@@ -230,15 +264,17 @@ public class AES {
         }
 
         // 密钥扩展算法
-        for (int i = nk; i < 4 * (rounds + 1); i++) {
+        for (int i = nk; i < nb * (nr + 1); i++) {
             int temp = w[i - 1];
             if (i % nk == 0) {
-                temp = subWord(rotWord(temp)) ^ (RCON[(i / nk) - 1] << 24);
+                temp = subWord(rotWord(temp)) ^ (RCON[i / nk - 1] << 24);
             } else if (nk > 6 && i % nk == 4) {
                 temp = subWord(temp);
             }
             w[i] = w[i - nk] ^ temp;
         }
+        
+        // 转换为轮密钥格式
         return groupWords(w);
     }
 
@@ -271,13 +307,33 @@ public class AES {
     //PKCS7填充
     private byte[] applyPadding(byte[] input) {
         int padding = BLOCK_SIZE - (input.length % BLOCK_SIZE);
+        if (padding == 0) {
+            padding = BLOCK_SIZE; // 如果明文长度正好是块大小的倍数，添加一个完整的填充块
+        }
         byte[] padded = Arrays.copyOf(input, input.length + padding);
         Arrays.fill(padded, input.length, padded.length, (byte) padding);
         return padded;
     }
 
     private byte[] removePadding(byte[] input) {
+        if (input.length == 0 || input.length % BLOCK_SIZE != 0) {
+            throw new IllegalArgumentException("无效的填充数据: 长度必须是16的倍数且不为0");
+        }
+        
         int padding = input[input.length - 1] & 0xFF;
+        
+        // 检查填充值的有效范围
+        if (padding <= 0 || padding > BLOCK_SIZE) {
+            throw new IllegalArgumentException("无效的填充值: " + padding);
+        }
+        
+        // 验证所有填充字节是否一致
+        for (int i = input.length - padding; i < input.length; i++) {
+            if ((input[i] & 0xFF) != padding) {
+                throw new IllegalArgumentException("无效的填充格式");
+            }
+        }
+        
         return Arrays.copyOf(input, input.length - padding);
     }
 
@@ -288,16 +344,146 @@ public class AES {
 
     // Galois Field乘法辅助方法
     private static int mul(int a, int b) {
-        int result = 0;
-        while (b > 0) {
-            if ((b & 1) != 0) result ^= a;
-            a = (a << 1) ^ ((a & 0x80) != 0 ? 0x1b : 0);
+        int p = 0;
+        for (int i = 0; i < 8; i++) {
+            if ((b & 1) != 0) {
+                p ^= a;
+            }
+            boolean highBitSet = (a & 0x80) != 0;
+            a <<= 1;
+            if (highBitSet) {
+                a ^= 0x1b; // x^8 + x^4 + x^3 + x + 1
+            }
             b >>= 1;
         }
-        return result;
+        return p & 0xff;
+    }
+
+    /**
+     * 使用已知答案测试验证AES实现
+     * @return 测试结果，true表示通过所有测试
+     */
+    public static boolean runKnownAnswerTest() {
+        boolean allTestsPassed = true;
+        
+        // 测试向量1: 128位密钥
+        byte[] key1 = hexToBytes("000102030405060708090a0b0c0d0e0f");
+        byte[] plaintext1 = hexToBytes("00112233445566778899aabbccddeeff");
+        byte[] expected1 = hexToBytes("69c4e0d86a7b0430d8cdb78070b4c55a");
+        
+        // 测试向量2: 192位密钥
+        byte[] key2 = hexToBytes("000102030405060708090a0b0c0d0e0f1011121314151617");
+        byte[] plaintext2 = hexToBytes("00112233445566778899aabbccddeeff");
+        byte[] expected2 = hexToBytes("dda97ca4864cdfe06eaf70a0ec0d7191");
+        
+        // 测试向量3: 256位密钥
+        byte[] key3 = hexToBytes("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
+        byte[] plaintext3 = hexToBytes("00112233445566778899aabbccddeeff");
+        byte[] expected3 = hexToBytes("8ea2b7ca516745bfeafc49904b496089");
+        
+        try {
+            // 测试1
+            System.out.println("--------- AES-128 测试 ---------");
+            AES aes1 = new AES(key1);
+            System.out.println("原始明文: " + bytesToHex(plaintext1));
+            
+            byte[] block1 = Arrays.copyOf(plaintext1, 16);
+            aes1.encryptBlock(block1); // 直接使用encryptBlock，跳过填充
+            System.out.println("加密结果: " + bytesToHex(block1));
+            System.out.println("预期结果: " + bytesToHex(expected1));
+            
+            boolean test1Passed = Arrays.equals(block1, expected1);
+            System.out.println("AES-128 test: " + (test1Passed ? "pass" : "fail"));
+            
+            if (!test1Passed) {
+                // 打印轮密钥验证
+                System.out.println("调试信息 - 前几个轮密钥:");
+                for (int i = 0; i < Math.min(3, aes1.roundKeys.length); i++) {
+                    System.out.println("  轮密钥 " + i + ": " + 
+                            String.format("%08x %08x %08x %08x", 
+                                    aes1.roundKeys[i][0], 
+                                    aes1.roundKeys[i][1],
+                                    aes1.roundKeys[i][2],
+                                    aes1.roundKeys[i][3]));
+                }
+            }
+            
+            allTestsPassed &= test1Passed;
+            
+            // 测试2 (如果支持192位密钥)
+            try {
+                System.out.println("\n--------- AES-192 测试 ---------");
+                AES aes2 = new AES(key2);
+                System.out.println("原始明文: " + bytesToHex(plaintext2));
+                
+                byte[] block2 = Arrays.copyOf(plaintext2, 16);
+                aes2.encryptBlock(block2); // 直接使用encryptBlock，跳过填充
+                System.out.println("加密结果: " + bytesToHex(block2));
+                System.out.println("预期结果: " + bytesToHex(expected2));
+                
+                boolean test2Passed = Arrays.equals(block2, expected2);
+                System.out.println("AES-192 test: " + (test2Passed ? "pass" : "fail"));
+                allTestsPassed &= test2Passed;
+            } catch (Exception e) {
+                System.out.println("AES-192 test: 跳过 - " + e.getMessage());
+            }
+            
+            // 测试3 (如果支持256位密钥)
+            try {
+                System.out.println("\n--------- AES-256 测试 ---------");
+                AES aes3 = new AES(key3);
+                System.out.println("原始明文: " + bytesToHex(plaintext3));
+                
+                byte[] block3 = Arrays.copyOf(plaintext3, 16);
+                aes3.encryptBlock(block3); // 直接使用encryptBlock，跳过填充
+                System.out.println("加密结果: " + bytesToHex(block3));
+                System.out.println("预期结果: " + bytesToHex(expected3));
+                
+                boolean test3Passed = Arrays.equals(block3, expected3);
+                System.out.println("AES-256 test: " + (test3Passed ? "pass" : "fail"));
+                allTestsPassed &= test3Passed;
+            } catch (Exception e) {
+                System.out.println("AES-256 test: 跳过 - " + e.getMessage());
+            }
+            
+            // 测试自加密解密
+            System.out.println("\n--------- 加解密一致性测试 ---------");
+            String testText = "TestAESImplementation";
+            AES aes = new AES(key1);
+            byte[] encrypted = aes.encrypt(testText.getBytes());
+            byte[] decrypted = aes.decrypt(encrypted);
+            String decryptedText = new String(decrypted);
+            boolean roundTripTest = testText.equals(decryptedText);
+            System.out.println("加密-解密往返测试: " + (roundTripTest ? "通过" : "失败"));
+            allTestsPassed &= roundTripTest;
+            
+            return allTestsPassed;
+            
+        } catch (Exception e) {
+            System.out.println("AES测试失败: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    // 十六进制字符串转字节数组
+    private static byte[] hexToBytes(String hex) {
+        int len = hex.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                    + Character.digit(hex.charAt(i + 1), 16));
+        }
+        return data;
     }
 
     public static void main(String[] args) {
+        // 运行已知答案测试
+        System.out.println("执行AES已知答案测试");
+        boolean testsPassed = runKnownAnswerTest();
+        System.out.println("已知答案测试结果: " + (testsPassed ? "全部通过" : "测试失败"));
+        System.out.println();
+        
         // 初始化参数（使用固定值方便验证）
         byte[] key = "ThisIsASecretKey".getBytes();  // 128-bit密钥
         //byte[] iv = "InitializationIV".getBytes();   // 16字节初始化向量
@@ -314,11 +500,13 @@ public class AES {
             // 解密过程
             byte[] decrypted = aes.decrypt(cipherText);
             System.out.println("解密结果: " + new String(decrypted));
+            
+            // 显式验证加解密是否一致
+            System.out.println("验证结果: " + plainText.equals(new String(decrypted)));
 
         } finally {
             aes.clearKeys(); // 安全擦除密钥
         }
-
     }
 
     // 字节数组转十六进制字符串（用于输出验证）

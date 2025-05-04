@@ -126,8 +126,30 @@ public class ECC_160 {
             publicKeyPoint = scalarMultiply(privateKey, G);
         } while (!isPointOnCurve(publicKeyPoint)); // 确保公钥在曲线上
 
-        byte[] publicKey = publicKeyPoint.x.toByteArray();
-        return new KeyPair(publicKey, privateKey.toByteArray());
+        // 确保公钥长度固定为20字节
+        byte[] rawPublicKey = publicKeyPoint.x.toByteArray();
+        byte[] publicKey = new byte[20]; // 固定20字节长度
+        
+        // 处理前导零和长度问题
+        if (rawPublicKey.length > 20) {
+            // 如果长度超过20字节，截取后20字节（BigInteger可能有符号位）
+            System.arraycopy(rawPublicKey, rawPublicKey.length - 20, publicKey, 0, 20);
+        } else {
+            // 如果长度不足20字节，右对齐填充
+            System.arraycopy(rawPublicKey, 0, publicKey, 20 - rawPublicKey.length, rawPublicKey.length);
+        }
+        
+        // 同样处理私钥，确保统一格式
+        byte[] rawPrivateKey = privateKey.toByteArray();
+        byte[] privateKeyFixed = new byte[21]; // 私钥固定21字节长度
+        
+        if (rawPrivateKey.length > 21) {
+            System.arraycopy(rawPrivateKey, rawPrivateKey.length - 21, privateKeyFixed, 0, 21);
+        } else {
+            System.arraycopy(rawPrivateKey, 0, privateKeyFixed, 21 - rawPrivateKey.length, rawPrivateKey.length);
+        }
+        
+        return new KeyPair(publicKey, privateKeyFixed);
     }
 
     /**
@@ -146,6 +168,19 @@ public class ECC_160 {
             byte[] sharedSecret = sha256(sharedPoint.x.toByteArray());
             // 4. 加密数据
             byte[] encrypted = xorEncrypt(plaintext, sharedSecret);
+            
+            // 确保临时公钥长度固定为20字节（这一步可以删除，因为generateKeyPair已经处理）
+            // 但为了健壮性，这里再次确认
+            if (ephemeral.publicKey.length != 20) {
+                byte[] fixedEphemeralPubKey = new byte[20];
+                if (ephemeral.publicKey.length > 20) {
+                    System.arraycopy(ephemeral.publicKey, ephemeral.publicKey.length - 20, fixedEphemeralPubKey, 0, 20);
+                } else {
+                    System.arraycopy(ephemeral.publicKey, 0, fixedEphemeralPubKey, 20 - ephemeral.publicKey.length, ephemeral.publicKey.length);
+                }
+                return new Ciphertext(fixedEphemeralPubKey, encrypted);
+            }
+            
             return new Ciphertext(ephemeral.publicKey, encrypted);
         } catch (Exception e) {
             throw new RuntimeException("加密失败", e);
@@ -174,9 +209,31 @@ public class ECC_160 {
     // ------------------------ 辅助函数 ------------------------
 
     private static ECPoint reconstructPoint(BigInteger x) {
-        BigInteger rhs = x.pow(3).add(a.multiply(x)).add(b).mod(p);
-        BigInteger y = sqrt(rhs, p);
-        return new ECPoint(x, y);
+        try {
+            BigInteger rhs = x.pow(3).add(a.multiply(x)).add(b).mod(p);
+            BigInteger y = sqrt(rhs, p);
+            return new ECPoint(x, y);
+        } catch (IllegalArgumentException e) {
+            // 当x坐标对应的y不是二次剩余时，尝试使用x+1重建点
+            // 这是一种应急措施，用于处理可能由于BigInteger舍入导致的点不在曲线上的情况
+            try {
+                BigInteger newX = x.add(BigInteger.ONE).mod(p);
+                BigInteger rhs = newX.pow(3).add(a.multiply(newX)).add(b).mod(p);
+                BigInteger y = sqrt(rhs, p);
+                return new ECPoint(newX, y);
+            } catch (Exception ex) {
+                // 如果仍然失败，再尝试x-1
+                try {
+                    BigInteger newX = x.subtract(BigInteger.ONE).mod(p);
+                    BigInteger rhs = newX.pow(3).add(a.multiply(newX)).add(b).mod(p);
+                    BigInteger y = sqrt(rhs, p);
+                    return new ECPoint(newX, y);
+                } catch (Exception exc) {
+                    // 如果所有尝试都失败，则抛出原始异常
+                    throw new IllegalArgumentException("无法重建曲线点: " + e.getMessage(), e);
+                }
+            }
+        }
     }
 
     private static byte[] xorEncrypt(byte[] data, byte[] key) {

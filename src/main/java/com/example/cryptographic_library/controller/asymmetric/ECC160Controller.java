@@ -2,8 +2,12 @@ package com.example.cryptographic_library.controller.asymmetric;
 
 import com.example.cryptographic_library.dto.asymmetric.ECC160DTO;
 import com.example.cryptographic_library.service.asymmetric.ECC160Service;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ECC160椭圆曲线加密接口
@@ -29,21 +33,30 @@ public class ECC160Controller {
      */
     @GetMapping("/keypair")
     public ResponseEntity<ECC160DTO.KeyPairResponse> generateKeyPair() {
-        return ResponseEntity.ok(cryptoService.generateKeyPair());
+        try {
+            return ResponseEntity.ok(cryptoService.generateKeyPair());
+        } catch (Exception e) {
+            throw new CryptoException("生成密钥对失败: " + e.getMessage(), e);
+        }
     }
 
     /**
      * 使用ECC160算法加密数据
      * @param request 加密请求体，包含：
      *                - publicKey: Base64编码的接收方公钥
-     *                - plaintext: Base64编码的待加密原始数据
+     *                - plaintext: 待加密的明文（任意字符串）
+     *                - isBase64: 明文是否已经是Base64编码（可选，默认false）
      * @return 加密响应实体，data字段包含Base64编码的加密结果（临时公钥+密文组合）
-     * @apiNote 加密结果格式：前20 字节为临时公钥，剩余部分为加密数据
+     * @apiNote 加密结果格式：前20字节为临时公钥，剩余部分为加密数据
      */
     @PostMapping("/encrypt")
     public ResponseEntity<ECC160DTO.CryptoResponse> encrypt(
             @RequestBody ECC160DTO.EncryptRequest request) {
-        return ResponseEntity.ok(cryptoService.encrypt(request));
+        try {
+            return ResponseEntity.ok(cryptoService.encrypt(request));
+        } catch (IllegalArgumentException e) {
+            throw new CryptoException("加密操作失败: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -51,12 +64,37 @@ public class ECC160Controller {
      * @param request 解密请求体，包含：
      *                - privateKey: Base64编码的接收方私钥
      *                - ciphertext: Base64编码的加密数据（需包含临时公钥）
-     * @return 解密响应实体，data字段包含Base64编码的原始明文
+     * @return 解密响应实体，data字段包含解密后的原始明文字符串
      * @apiNote 密文格式要求：必须是由本系统加密生成的组合格式数据
      */
     @PostMapping("/decrypt")
     public ResponseEntity<ECC160DTO.CryptoResponse> decrypt(
             @RequestBody ECC160DTO.DecryptRequest request) {
-        return ResponseEntity.ok(cryptoService.decrypt(request));
+        try {
+            return ResponseEntity.ok(cryptoService.decrypt(request));
+        } catch (IllegalArgumentException e) {
+            throw new CryptoException("解密操作失败: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * 加密操作异常
+     */
+    public static class CryptoException extends RuntimeException {
+        public CryptoException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+    
+    /**
+     * 统一异常处理
+     */
+    @ExceptionHandler(CryptoException.class)
+    public ResponseEntity<Map<String, String>> handleCryptoException(CryptoException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", ex.getMessage());
+        errorResponse.put("status", "failed");
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

@@ -47,24 +47,121 @@ public class RSA_SHA1 {
     }
 
     public static boolean verify(String message, String signatureBase64, BigInteger publicKey, BigInteger modulus) {
-        byte[] hash = SHA1.hash(UTF_8.encode(message));
-        byte[] signature = Base64.decode(signatureBase64);
+        try {
+            byte[] hash = SHA1.hash(UTF_8.encode(message));
+            byte[] signature = Base64.decode(signatureBase64);
 
-        BigInteger s = new BigInteger(1, signature);
-        byte[] decrypted = s.modPow(
-                publicKey,
-                modulus
-        ).toByteArray();
+            // 检查签名长度
+            int keyLengthBytes = (modulus.bitLength() + 7) / 8;
+            if (signature.length > keyLengthBytes + 1) {
+                return false; // 签名长度异常
+            }
 
-        byte[] expectedPadded = addSignaturePadding(hash,modulus);
-        return Arrays.equals(normalizeBytes(decrypted), normalizeBytes(expectedPadded));
+            BigInteger s = new BigInteger(1, signature);
+            
+            // 检查签名范围
+            if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(modulus) >= 0) {
+                return false; // 签名值超出有效范围
+            }
+            
+            // 解密签名
+            byte[] decrypted = s.modPow(publicKey, modulus).toByteArray();
+            
+            // 规范化解密结果以匹配预期的填充长度
+            decrypted = normalizeToLength(decrypted, keyLengthBytes);
+            
+            // 如果长度不匹配，验证失败
+            if (decrypted == null) {
+                return false;
+            }
+            
+            // 验证PKCS#1 v1.5填充格式
+            if (!validatePKCS1Type1Padding(decrypted)) {
+                return false;
+            }
+            
+            // 计算预期的填充数据
+            byte[] expectedPadded = addSignaturePadding(hash, modulus);
+            
+            // 使用恒定时间比较以防止时序攻击
+            return constantTimeEquals(decrypted, expectedPadded);
+        } catch (Exception e) {
+            // 捕获任何异常并返回验证失败
+            return false;
+        }
     }
 
-    private static byte[] normalizeBytes(byte[] data) {
-        if (data.length > 0 && data[0] == 0) {
+    /**
+     * 验证PKCS#1 v1.5 Type 1填充格式
+     * 格式为: 0x00 0x01 0xFF...0xFF 0x00 [digestInfo+hash]
+     */
+    private static boolean validatePKCS1Type1Padding(byte[] data) {
+        // 检查基本长度
+        if (data.length < 11) { // 最小长度: 0x00 0x01 8字节PS 0x00 至少1字节数据
+            return false;
+        }
+        
+        // 检查头部标记
+        if (data[0] != 0x00 || data[1] != 0x01) {
+            return false;
+        }
+        
+        // 查找分隔符0x00
+        int separatorIndex = -1;
+        for (int i = 2; i < data.length; i++) {
+            if (data[i] == 0x00) {
+                separatorIndex = i;
+                break;
+            }
+            
+            // 检查填充字节，必须是0xFF
+            if (data[i] != (byte)0xFF) {
+                return false;
+            }
+        }
+        
+        // 必须找到分隔符，且不能紧跟在块类型后面
+        return separatorIndex > 2 && separatorIndex < data.length - 1;
+    }
+
+    /**
+     * 将字节数组规范化为指定长度
+     */
+    private static byte[] normalizeToLength(byte[] data, int targetLength) {
+        if (data.length == targetLength) {
+            return data;
+        }
+        
+        if (data.length == targetLength + 1 && data[0] == 0) {
+            // 处理BigInteger可能添加的前导零
             return Arrays.copyOfRange(data, 1, data.length);
         }
-        return data;
+        
+        if (data.length < targetLength) {
+            // 填充前导零使长度匹配
+            byte[] result = new byte[targetLength];
+            System.arraycopy(data, 0, result, targetLength - data.length, data.length);
+            return result;
+        }
+        
+        // 长度不符合要求
+        return null;
+    }
+
+    /**
+     * 恒定时间比较两个字节数组，防止时序攻击
+     */
+    private static boolean constantTimeEquals(byte[] a, byte[] b) {
+        if (a.length != b.length) {
+            return false;
+        }
+        
+        int result = 0;
+        for (int i = 0; i < a.length; i++) {
+            result |= a[i] ^ b[i]; // 按位异或，任何差异都将使result非零
+        }
+        
+        return result == 0;
     }
 
     public static void main(String[] args) {
@@ -77,6 +174,13 @@ public class RSA_SHA1 {
         System.out.println("消息: " + message);
         System.out.println("签名: " + signature);
         System.out.println("验证结果: " + verify(message, signature, keyPair.getPublicKey(), keyPair.getModulus()));
+        
+        // 测试被篡改的签名
+        if (signature.length() > 2) {
+            String tampered = signature.substring(0, signature.length()-2) + "AB";
+            System.out.println("被篡改的签名: " + tampered);
+            System.out.println("篡改后验证结果: " + verify(message, tampered, keyPair.getPublicKey(), keyPair.getModulus()));
+        }
     }
 }
 
