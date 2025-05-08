@@ -1,10 +1,16 @@
-# Cryptographic Library
+# CipherGuard
 
 基于Java的密码学算法实现库，提供对称加密、非对称加密、哈希算法等核心功能，遵循主流密码学标准。
 
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.0.6-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
+
+前端代码在：https://github.com/lzy-2004/cryptographic-library-react.git  
+
+
+## 界面预览  
+![界面预览](./img.png)  
 
 ## 功能特性
 
@@ -19,8 +25,10 @@
 | 哈希算法      | SHA-1/SHA-256      | FIPS 180-4            |
 |               | SHA3-512           | FIPS 202              |
 |               | RIPEMD-160         | ISO/IEC 10118-3:2004  |
+|               | MD5                | RFC 1321              |
 | HMAC          | HMAC-SHA1/256      | RFC 2104              |
 | 密钥派生      | PBKDF2             | RFC 2898              |
+
 
 ## 快速开始
 
